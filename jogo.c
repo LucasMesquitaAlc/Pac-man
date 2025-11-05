@@ -16,6 +16,8 @@ typedef struct
 } personagem;
 
 
+
+
 void receber_arquivo(FILE *arquivo, char **matriz, int *posicao_pacman) {
     char caractere;
     int linha = 0;
@@ -31,12 +33,11 @@ void receber_arquivo(FILE *arquivo, char **matriz, int *posicao_pacman) {
             if (caractere == 'P'){
                 posicao_pacman[0] =linha;
                 posicao_pacman[1] = coluna;  
-        }
+            }
         coluna++;               
-    }        
- 
-
-}}
+        }         
+    }
+}
 
 
 int main() {
@@ -94,16 +95,26 @@ int main() {
             if(pacman.direcao == 'D' && (matriz[pacman.posicao_y][pacman.posicao_x+1] != '#')){
                 img.width = -sprite.width;
                 rotacao = 0;
+                moveu = 1;
+                matriz[pacman.posicao_y][pacman.posicao_x] = '_';
+                if (matriz[pacman.posicao_y][pacman.posicao_x+1] == 'T'){
+                    pacman.posicao_x = 1;
+                    continue;}
                 matriz[pacman.posicao_y][pacman.posicao_x+1] = 'P';
                 matriz[pacman.posicao_y][pacman.posicao_x++] = '_';
-                moveu = 1;
+                
             }
-            if(pacman.direcao == 'E' && (matriz[pacman.posicao_y][pacman.posicao_x-1] != '#')){
+            if(pacman.direcao == 'E' && (matriz[pacman.posicao_y][pacman.posicao_x-1] != '#')){            
                 img.width = sprite.width;
                 rotacao = 0;
+                moveu = 1;
+                matriz[pacman.posicao_y][pacman.posicao_x] = '_';
+                if (matriz[pacman.posicao_y][pacman.posicao_x-1] == 'T'){
+                    pacman.posicao_x = 38;
+                    continue;}
                 matriz[pacman.posicao_y][pacman.posicao_x-1] = 'P';
                 matriz[pacman.posicao_y][pacman.posicao_x--] = '_';
-                moveu = 1;
+                
             }
             if(pacman.direcao == 'C' && (matriz[pacman.posicao_y-1][pacman.posicao_x] != '#')){
                 img.width = sprite.width;
