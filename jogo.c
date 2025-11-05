@@ -16,8 +16,6 @@ typedef struct
 } personagem;
 
 
-
-
 void receber_arquivo(FILE *arquivo, char **matriz, int *posicao_pacman) {
     char caractere;
     int linha = 0;
@@ -71,17 +69,20 @@ int main() {
     pacman.posicao_x = posicoes[1];
     pacman.posicao_y = posicoes[0];
 
-    //Carrega os sprites do pacman
-    Texture2D sprite = LoadTexture("sprite_pacman.png");
+    //Carrega os sprites do pacman e permite rotação
+    Texture2D sprite = LoadTexture("sprites\\sprite_pacman.png");
     Rectangle img = {0, 0, sprite.width, sprite.height};
     Rectangle dest = {pacman.posicao_x*20 + 10, pacman.posicao_y*20 + 10, 20, 20};
     Vector2 centro = {dest.width/2, dest.height/2};
+
+    Texture2D sprite_fantasma_v = LoadTexture("sprites\\f_vermelho.png");
+
+
     float rotacao = 0;
 
 
     while (!WindowShouldClose())
     {
-
         int moveu = 0;
         float tempo = GetFrameTime();
         frame_movimento += tempo;
@@ -132,7 +133,6 @@ int main() {
             }
         }
         
-
         BeginDrawing();
         ClearBackground(BLACK);
 
@@ -156,7 +156,7 @@ int main() {
                     DrawRectangle(coluna*20,linha*20, 20, 20, PURPLE);
                     break;
                 case 'F': //Fantasma
-                    DrawCircle(coluna*20+10,linha*20+10,10, RED);
+                    DrawTexture(sprite_fantasma_v,coluna*20,linha*20,WHITE);
                 }
             }
         }
