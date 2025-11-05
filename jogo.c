@@ -76,6 +76,7 @@ int main() {
     Vector2 centro = {dest.width/2, dest.height/2};
 
     Texture2D sprite_fantasma_v = LoadTexture("sprites\\f_vermelho.png");
+    Texture2D sprite_parede = LoadTexture("sprites\\parede.png");
 
 
     float rotacao = 0;
@@ -142,10 +143,10 @@ int main() {
                 switch (matriz[linha][coluna])
                 {
                 case '#': //Parede
-                    DrawRectangle(coluna*20,linha*20, 20, 20, BLUE);
+                    DrawTexture(sprite_parede,coluna*20,linha*20,WHITE);
                     break;
                 case '.': //Pellet
-                    DrawCircle(coluna*20+10,linha*20+10,1, WHITE);
+                    DrawCircle(coluna*20+10,linha*20+10,2, WHITE);
                     break;   
                 case 'P': //Pacman
                     dest.x = coluna * 20 + 10;
