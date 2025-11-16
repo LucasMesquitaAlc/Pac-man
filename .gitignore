@@ -2,3 +2,4 @@ output/
 inuteis_por_agora/
 *.txt
 *.exe
+.gitignore
