@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include "mapa.h"
 #include "raylib.h"
-#include "pacman.h"
-#include "fantasmas.h"
+// #include "pacman.h"
+// #include "fantasmas.h"
 
 
 char **criar_matriz(){
