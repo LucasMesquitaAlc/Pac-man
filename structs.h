@@ -9,6 +9,12 @@ typedef struct
     int posicao_x;
     int posicao_y;
     char direcao;
+    char dir_buffer;
+    int estado_pac;
+    float tempo_invu;
+    int pontuacao;
+    int vida;
+    Texture2D sprite;
 } personagem;
 
 typedef struct
@@ -16,14 +22,19 @@ typedef struct
     int posicao_x;
     int posicao_y;
     int estado; //0 - Invulnerável, 1 - Vulnerável
-    Texture2D sprite;
-    float tempo;
-    char embaixo;
+    Texture2D sprite; // Sprite do fantasma
+    float tempo; // Tempo para a ação dos fantasmas
+    char embaixo; // Verifica o que tem embaixo do fantasma
     int ultimo_x;
     int ultimo_y;
-    int *lista_posicoes;
-    int tamanho_lista;
-    int ultimo_mov; // 0 - X; 1 - Y
+    int *lista_posicoes; // Posições válidas para o fantasma andar
+    int tamanho_lista; // Quantidade de posições válidas
+    int ultimo_mov; // 0 - X; 1 - Y ; Diz se o último movimento foi para cima ou para baixo
 } inimigo;
+
+typedef struct{
+    int melhor_direcao;
+    int melhor_distancia;
+} dist_manha;
 
 #endif
