@@ -15,6 +15,8 @@ typedef struct
     int pontuacao;
     int vida;
     Texture2D sprite;
+    int x_inicial;
+    int y_inicial;
 } personagem;
 
 typedef struct
@@ -30,6 +32,8 @@ typedef struct
     int *lista_posicoes; // Posições válidas para o fantasma andar
     int tamanho_lista; // Quantidade de posições válidas
     int ultimo_mov; // 0 - X; 1 - Y ; Diz se o último movimento foi para cima ou para baixo
+    int x_inicial;
+    int y_inicial;
 } inimigo;
 
 typedef struct{
