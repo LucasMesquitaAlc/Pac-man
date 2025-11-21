@@ -7,8 +7,8 @@
 #include "menu.h"
 #include <math.h>
 
-#define LARGURA 800
-#define ALTURA 420
+#define LARGURA 1600
+#define ALTURA 840
 #define LinhaMatriz 20
 #define ColunaMatriz 40
 
@@ -48,20 +48,21 @@ void nao_voltar(int *tamanho_lista, int **lista, int Direcao){
     *(tamanho_lista) = tam_nova_lista;
 }
 
-void interacao(char **matriz, int linha, int coluna, personagem *p){
+void interacao(char **matriz, int linha, int coluna, personagem *p, int *pellets){
     int pontos_ganhos = 0;
     switch (matriz[linha][coluna]){
     case '.': // Pellet
         pontos_ganhos = 10;
+        *pellets -= 1;
         break;
     case 'o': // Power Pellet
         p->tempo_invu = 0;
         pontos_ganhos = 50;
         p->estado_pac = 1;
+        *pellets -= 1;
         break;
     }
     p->pontuacao += pontos_ganhos;
-    printf("%d \n", p->pontuacao);
 }
 
 // função para resetar a posição
@@ -209,6 +210,7 @@ dist_manha dist_manhattan(inimigo f, personagem p){
 int main(){
     // Inicia o jogo e põe FPS padrão
     iniciar_tela();
+    int qnt_pellets;
     Texture2D sprite = LoadTexture("sprites\\sprite_pacman.png");
 
     TELA tela = jogo;
@@ -216,7 +218,7 @@ int main(){
     float frame_movimento = 0.0f;
 
     int posicoes[2];
-    char **matriz = ler_arquivo("mapa1.txt", posicoes);
+    char **matriz = ler_arquivo("mapa2.txt", posicoes, &qnt_pellets);
     if (!matriz)
         return -1;
 
@@ -240,7 +242,7 @@ int main(){
     int inicial_pacman_y = posicoes[0];
 
     Rectangle img = {0, 0, pacman.sprite.width, pacman.sprite.height};
-    Rectangle dest = {pacman.posicao_x * 20 + 10, pacman.posicao_y * 20 + 10, 20, 20}; // Pode estar duplicado, mas funciona
+    Rectangle dest = {pacman.posicao_x * 40 + 20, pacman.posicao_y * 40 + 20, 40, 40}; // Pode estar duplicado, mas funciona
     Vector2 centro = {dest.width / 2, dest.height / 2};
 
     // Struct dos fantasmas + tudo que puder envolvê-los:
@@ -323,7 +325,7 @@ int main(){
                     moveu = 1;
 
                     // soma a pontuação
-                    interacao(matriz, pacman.posicao_y, pacman.posicao_x + 1, &pacman);
+                    interacao(matriz, pacman.posicao_y, pacman.posicao_x + 1, &pacman, &qnt_pellets);
 
                     matriz[pacman.posicao_y][pacman.posicao_x] = '_';
                     if (matriz[pacman.posicao_y][pacman.posicao_x + 1] == 'T'){
@@ -342,7 +344,7 @@ int main(){
                     moveu = 1;
 
                     // soma a pontuação
-                    interacao(matriz, pacman.posicao_y, pacman.posicao_x - 1, &pacman);
+                    interacao(matriz, pacman.posicao_y, pacman.posicao_x - 1, &pacman, &qnt_pellets);
 
                     matriz[pacman.posicao_y][pacman.posicao_x] = '_';
                     if (matriz[pacman.posicao_y][pacman.posicao_x - 1] == 'T'){
@@ -361,7 +363,13 @@ int main(){
                     rotacao = 90;
 
                     // soma a pontuação
-                    interacao(matriz, pacman.posicao_y - 1, pacman.posicao_x, &pacman);
+                    interacao(matriz, pacman.posicao_y - 1, pacman.posicao_x, &pacman, &qnt_pellets);
+                    if (matriz[pacman.posicao_y-1][pacman.posicao_x] == 'T'){
+                        matriz[pacman.posicao_y][pacman.posicao_x] = '_';
+                        pacman.posicao_y = 18;
+                        matriz[pacman.posicao_y][pacman.posicao_x] = 'P';
+                        continue;
+                    }
 
                     matriz[pacman.posicao_y][pacman.posicao_x] = '_';
                     pacman.posicao_y--;
@@ -373,8 +381,13 @@ int main(){
                     rotacao = 270;
 
                     // soma a pontuação
-                    interacao(matriz, pacman.posicao_y + 1, pacman.posicao_x, &pacman);
-
+                    interacao(matriz, pacman.posicao_y + 1, pacman.posicao_x, &pacman, &qnt_pellets);
+                    if (matriz[pacman.posicao_y+1][pacman.posicao_x] == 'T'){
+                        matriz[pacman.posicao_y][pacman.posicao_x] = '_';
+                        pacman.posicao_y = 1;
+                        matriz[pacman.posicao_y][pacman.posicao_x] = 'P';
+                        continue;
+                    }
                     matriz[pacman.posicao_y][pacman.posicao_x] = '_';
                     pacman.posicao_y++;
                     matriz[pacman.posicao_y][pacman.posicao_x] = 'P';
@@ -455,6 +468,10 @@ int main(){
                     // BAIXO
                     if (dir_f == 1){
                         matriz[fantasmas[f].posicao_y][fantasmas[f].posicao_x] = fantasmas[f].embaixo;
+                        if (matriz[fantasmas[f].posicao_y+1][fantasmas[f].posicao_x] == 'T'){
+                            fantasmas[f].embaixo = matriz[fantasmas[f].posicao_y][1];
+                            fantasmas[f].posicao_y = 0;
+                        }
                         fantasmas[f].embaixo = matriz[fantasmas[f].posicao_y + 1][fantasmas[f].posicao_x];
                         matriz[fantasmas[f].posicao_y + 1][fantasmas[f].posicao_x] = 'F';
                         fantasmas[f].ultimo_y = fantasmas[f].posicao_y;
@@ -477,6 +494,10 @@ int main(){
                     // CIMA
                     if (dir_f == 3){
                         matriz[fantasmas[f].posicao_y][fantasmas[f].posicao_x] = fantasmas[f].embaixo;
+                        if (matriz[fantasmas[f].posicao_y-1][fantasmas[f].posicao_x] == 'T'){
+                            fantasmas[f].embaixo = matriz[fantasmas[f].posicao_y][1];
+                            fantasmas[f].posicao_y = 19;
+                        }
                         fantasmas[f].embaixo = matriz[fantasmas[f].posicao_y - 1][fantasmas[f].posicao_x];
                         matriz[fantasmas[f].posicao_y - 1][fantasmas[f].posicao_x] = 'F';
                         fantasmas[f].ultimo_y = fantasmas[f].posicao_y;
@@ -528,6 +549,10 @@ int main(){
         sprintf(txt_score, "SCORE: %d", pacman.pontuacao);
         DrawText(txt_score, LARGURA - 150, ALTURA - 20, 20, YELLOW);
 
+        char pellets[20];
+        sprintf(txt_score, "Pellets: %d", qnt_pellets);
+        DrawText(txt_score, LARGURA - 500, ALTURA - 20, 20, YELLOW);
+
         // desenha as vidas
         char txt_vidas[10];
         sprintf(txt_vidas, "VIDAS: %d", pacman.vida);
@@ -538,26 +563,26 @@ int main(){
             for (int coluna = 0; coluna < 40; coluna++){
                 switch (matriz[linha][coluna]){
                 case '#': // Parede
-                    DrawTexture(sprite_parede, coluna * 20, linha * 20, WHITE);
+                    DrawTexture(sprite_parede, coluna * 40, linha * 40, WHITE);
                     break;
                 case '.': // Pellet
-                    DrawCircle(coluna * 20 + 10, linha * 20 + 10, 2, WHITE);
+                    DrawCircle(coluna * 40 + 20, linha * 40 + 20, 4, WHITE);
                     break;
                 case 'P': // Pacman
-                    dest.x = coluna * 20 + 10;
-                    dest.y = linha * 20 + 10;
-                    DrawTexturePro(sprite, img, dest, centro, rotacao, WHITE);
+                    dest.x = coluna * 40 + 20;
+                    dest.y = linha * 40 + 20;
+                    DrawTexturePro(pacman.sprite, img, dest, centro, rotacao, WHITE);
                     break;
                 case 'T': // Portal
-                    DrawTexture(sprite_portal, coluna * 20, linha * 20, WHITE);
+                    DrawTexture(sprite_portal, coluna * 40, linha * 40, WHITE);
                     break;
                 case 'o': // Power Pellet
-                    DrawCircle(coluna * 20 + 10, linha * 20 + 10, 5, WHITE);
+                    DrawCircle(coluna * 40 + 20, linha * 40 + 20, 10, WHITE);
                     break;
                 case 'F': // Fantasma
                     for (int j = 0; j < 4; j++){
                         if (fantasmas[j].posicao_x == coluna && fantasmas[j].posicao_y == linha){
-                            DrawTexture(fantasmas[j].sprite, coluna * 20, linha * 20, WHITE);
+                            DrawTexture(fantasmas[j].sprite, coluna * 40, linha * 40, WHITE);
                         }
                     }
                     break;

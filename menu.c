@@ -67,7 +67,7 @@ void salvarjogo(char **matriz, personagem *pacman, inimigo *fantasmas, int num_f
         return;
     }
 
-    fwrite(&pacman, sizeof(personagem), 1, f);
+    fwrite(pacman, sizeof(personagem), 1, f);
     fwrite(&pacman->pontuacao, sizeof(int), 1, f);
     fwrite(&pacman->vida, sizeof(int), 1, f);
 
@@ -98,19 +98,14 @@ void salvarjogo(char **matriz, personagem *pacman, inimigo *fantasmas, int num_f
 }
 
 void carregarjogo(
-    char **matriz,
-    personagem *pacman_ptr,
-    inimigo *fantasmas,
-    int num_fantasmas,
-    const char *filename
-) {
+    char **matriz, personagem *pacman_ptr, inimigo *fantasmas, int num_fantasmas, const char *filename) {
     FILE *f = fopen(filename, "rb");
     if (!f) {
         printf("carregarjogo: nenhum save encontrado em %s\n", filename);
         return;
     }
 
-    fread(&pacman_ptr, sizeof(personagem), 1, f);
+    fread(pacman_ptr, sizeof(personagem), 1, f);
     fread(&pacman_ptr->pontuacao, sizeof(int), 1, f);
     fread(&pacman_ptr->vida, sizeof(int), 1, f);
 

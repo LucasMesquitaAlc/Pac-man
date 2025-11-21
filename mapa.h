@@ -9,7 +9,7 @@
 
 char **criar_matriz();
 void liberar_mapa(char **matriz);
-char **ler_arquivo(const char *nome, int *posicao_pacman);
-void ler_mapa(FILE *arquivo, char **matriz, int *posicao_pacman);
+char **ler_arquivo(const char *nome, int *posicao_pacman, int *pellets);
+int ler_mapa(FILE *arquivo, char **matriz, int *posicao_pacman);
 
 #endif
