@@ -34,11 +34,14 @@ typedef struct
     int ultimo_mov; // 0 - X; 1 - Y ; Diz se o último movimento foi para cima ou para baixo
     int x_inicial;
     int y_inicial;
+    int id; // 0 - vermelho, 1 - rosa, 2 - laranja, 3 - azul
 } inimigo;
 
 typedef struct{
     int melhor_direcao;
-    int melhor_distancia;
+    int menor_distancia;
+    int pior_direcao;
+    int maior_distancia;
 } dist_manha;
 
 #endif

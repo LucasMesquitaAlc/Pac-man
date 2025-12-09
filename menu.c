@@ -9,8 +9,8 @@
 #define LinhaMatriz 20
 #define ColunaMatriz 40
 
-void novojogo(char **matriz, personagem *pacman, inimigo *fantasmas, int num_fantasmas, int *inicial_fantasma_x, int *inicial_fantasma_y, const char *mapa_filename) {
-
+void novojogo(char **matriz, personagem *pacman, inimigo *fantasmas, int num_fantasmas, const char *mapa_filename) {
+    int num_pellets;
     pacman->pontuacao = 0;
     pacman->vida = 3;
 
@@ -18,8 +18,7 @@ void novojogo(char **matriz, personagem *pacman, inimigo *fantasmas, int num_fan
     if (!arq) {
         printf("novojogo: erro ao abrir %s\n", mapa_filename);
     } else {
-        int posicao_pac[2] = { -1, -1 };
-        ler_mapa(arq, matriz, posicao_pac); 
+        ler_mapa(arq, matriz, pacman, fantasmas); 
         fclose(arq);
     }
 
@@ -44,8 +43,8 @@ void novojogo(char **matriz, personagem *pacman, inimigo *fantasmas, int num_fan
     }
 
     for (int f = 0; f < num_fantasmas; f++) {
-        fantasmas[f].posicao_x = inicial_fantasma_x[f];
-        fantasmas[f].posicao_y = inicial_fantasma_y[f];
+        fantasmas[f].posicao_x = fantasmas[f].x_inicial;
+        fantasmas[f].posicao_y = fantasmas[f].y_inicial;
         if (fantasmas[f].posicao_y >= 0 && fantasmas[f].posicao_y < LinhaMatriz && fantasmas[f].posicao_x >= 0 && fantasmas[f].posicao_x < ColunaMatriz) {
             fantasmas[f].embaixo = matriz[fantasmas[f].posicao_y][fantasmas[f].posicao_x];
             matriz[fantasmas[f].posicao_y][fantasmas[f].posicao_x] = 'F';
@@ -87,6 +86,7 @@ void salvarjogo(char **matriz, personagem *pacman, inimigo *fantasmas, int num_f
         fwrite(&fantasmas[fidx].ultimo_y, sizeof(int), 1, f);
         fwrite(&fantasmas[fidx].tamanho_lista, sizeof(int), 1, f);
         fwrite(&fantasmas[fidx].ultimo_mov, sizeof(int), 1, f);
+        fwrite(&fantasmas[fidx].id, sizeof(int), 1, f);
         if (fantasmas[fidx].tamanho_lista > 0 && fantasmas[fidx].lista_posicoes != NULL) {
             for (int k = 0; k < fantasmas[fidx].tamanho_lista; k++)
                 fwrite(&fantasmas[fidx].lista_posicoes[k], sizeof(int), 1, f);
@@ -127,6 +127,7 @@ void carregarjogo(
         fread(&fantasmas[fidx].ultimo_y, sizeof(int), 1, f);
         fread(&fantasmas[fidx].tamanho_lista, sizeof(int), 1, f);
         fread(&fantasmas[fidx].ultimo_mov, sizeof(int), 1, f);
+        fread(&fantasmas[fidx].id, sizeof(int), 1, f);
 
         if (fantasmas[fidx].lista_posicoes) {
             free(fantasmas[fidx].lista_posicoes);
@@ -175,8 +176,6 @@ void menu(
     personagem *pacman,
     inimigo *fantasmas,
     int num_fantasmas,
-    int *inicial_fantasma_x,
-    int *inicial_fantasma_y,
     const char *mapa_filename
 ) {
     if (*tela_ptr == jogo && IsKeyPressed(KEY_TAB)) {
@@ -192,7 +191,7 @@ void menu(
     }
 
     if (IsKeyPressed(KEY_N)) {
-        novojogo(matriz, pacman, fantasmas, num_fantasmas, inicial_fantasma_x, inicial_fantasma_y, mapa_filename);
+        novojogo(matriz, pacman, fantasmas, num_fantasmas, mapa_filename);
         *tela_ptr = jogo;
         return;
     }
@@ -215,7 +214,16 @@ void menu(
 }
 
 void mostrar_gameover(TELA *tela_ptr, int *pontuacao, int *vidas_ptr){
+    if (IsKeyPressed(KEY_TAB)) {
+        *tela_ptr = pausa;
+    }
     if (IsKeyPressed(KEY_Q)) {
         CloseWindow();
+    }
+}
+
+void mostrar_vitoria(TELA *tela_ptr, int *pontuacao, int *vidas_ptr){
+    if (IsKeyPressed(KEY_TAB)) {
+        *tela_ptr = pausa;
     }
 }

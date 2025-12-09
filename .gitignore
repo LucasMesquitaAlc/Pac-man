@@ -2,4 +2,6 @@ output/
 inuteis_por_agora/
 *.txt
 *.exe
-.gitignore
+backup/
+backup.c
+save.bin

@@ -11,7 +11,9 @@
 typedef enum TELA {
     jogo = 0,
     pausa = 1,
-    gameover = 2
+    gameover = 2,
+    nivel = 3,
+    vitoria = 4
 } TELA;
 
 /*
@@ -29,10 +31,8 @@ void menu(
     TELA *tela_ptr,
     char **matriz,
     personagem *pacman,
-    inimigo *fantasmas,
+    inimigo *fantasmas_dinamico,
     int num_fantasmas,
-    int *inicial_fantasma_x,
-    int *inicial_fantasma_y,
     const char *mapa_filename
 );
 
@@ -42,8 +42,6 @@ void novojogo(
     personagem *pacman,
     inimigo *fantasmas,
     int num_fantasmas,
-    int *inicial_fantasma_x,
-    int *inicial_fantasma_y,
     const char *mapa_filename
 );
 
@@ -66,5 +64,7 @@ void carregarjogo(
 void sairjogo();
 
 void mostrar_gameover(TELA *tela_ptr, int *pontuacao, int *vidas_ptr);
+
+void mostrar_vitoria(TELA *tela_ptr, int *pontuacao, int *vidas_ptr);
 
 #endif
