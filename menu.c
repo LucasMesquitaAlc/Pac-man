@@ -9,7 +9,7 @@
 #define LinhaMatriz 20
 #define ColunaMatriz 40
 
-void novojogo(char **matriz, personagem *pacman, inimigo *fantasmas, int num_fantasmas, const char *mapa_filename) {
+void novojogo(char **matriz, personagem *pacman, inimigo *fantasmas, int num_fantasmas, const char *mapa_filename, int *pellets) {
     int num_pellets;
     pacman->pontuacao = 0;
     pacman->vida = 3;
@@ -18,7 +18,7 @@ void novojogo(char **matriz, personagem *pacman, inimigo *fantasmas, int num_fan
     if (!arq) {
         printf("novojogo: erro ao abrir %s\n", mapa_filename);
     } else {
-        ler_mapa(arq, matriz, pacman, fantasmas); 
+        *pellets = ler_mapa(arq, matriz, pacman, fantasmas); 
         fclose(arq);
     }
 
@@ -46,7 +46,7 @@ void novojogo(char **matriz, personagem *pacman, inimigo *fantasmas, int num_fan
         fantasmas[f].posicao_x = fantasmas[f].x_inicial;
         fantasmas[f].posicao_y = fantasmas[f].y_inicial;
         if (fantasmas[f].posicao_y >= 0 && fantasmas[f].posicao_y < LinhaMatriz && fantasmas[f].posicao_x >= 0 && fantasmas[f].posicao_x < ColunaMatriz) {
-            fantasmas[f].embaixo = matriz[fantasmas[f].posicao_y][fantasmas[f].posicao_x];
+            fantasmas[f].embaixo = '.';
             matriz[fantasmas[f].posicao_y][fantasmas[f].posicao_x] = 'F';
         } else {
             fantasmas[f].embaixo = '_';
@@ -59,7 +59,7 @@ void novojogo(char **matriz, personagem *pacman, inimigo *fantasmas, int num_fan
     }
 }
 
-void salvarjogo(char **matriz, personagem *pacman, inimigo *fantasmas, int num_fantasmas, const char *filename) {
+void salvarjogo(char **matriz, personagem *pacman, inimigo *fantasmas, int num_fantasmas, const char *filename, int *pellets) {
     FILE *f = fopen(filename, "wb");
     if (!f) {
         printf("salvarjogo: erro ao abrir %s para escrita\n", filename);
@@ -92,13 +92,14 @@ void salvarjogo(char **matriz, personagem *pacman, inimigo *fantasmas, int num_f
                 fwrite(&fantasmas[fidx].lista_posicoes[k], sizeof(int), 1, f);
         }
     }
+    fwrite(pellets,sizeof(int),1,f);
 
     fclose(f);
     printf("Jogo salvo em %s\n", filename);
 }
 
 void carregarjogo(
-    char **matriz, personagem *pacman_ptr, inimigo *fantasmas, int num_fantasmas, const char *filename) {
+    char **matriz, personagem *pacman_ptr, inimigo *fantasmas, int num_fantasmas, const char *filename, int *pellets) {
     FILE *f = fopen(filename, "rb");
     if (!f) {
         printf("carregarjogo: nenhum save encontrado em %s\n", filename);
@@ -162,6 +163,7 @@ void carregarjogo(
         }
     }
 
+    fread(pellets, sizeof(int), 1, f);
     fclose(f);
     printf("Jogo carregado de %s\n", filename);
 }
@@ -176,7 +178,8 @@ void menu(
     personagem *pacman,
     inimigo *fantasmas,
     int num_fantasmas,
-    const char *mapa_filename
+    const char *mapa_filename,
+    int *pellets
 ) {
     if (*tela_ptr == jogo && IsKeyPressed(KEY_TAB)) {
         *tela_ptr = pausa;
@@ -191,19 +194,20 @@ void menu(
     }
 
     if (IsKeyPressed(KEY_N)) {
-        novojogo(matriz, pacman, fantasmas, num_fantasmas, mapa_filename);
+        novojogo(matriz, pacman, fantasmas, num_fantasmas, mapa_filename, pellets);
+        *pellets += 4;
         *tela_ptr = jogo;
         return;
     }
 
     if (IsKeyPressed(KEY_C)) {
-        carregarjogo(matriz, pacman, fantasmas, num_fantasmas, "save.bin");
+        carregarjogo(matriz, pacman, fantasmas, num_fantasmas, "save.bin", pellets);
         *tela_ptr = jogo;
         return;
     }
 
     if (IsKeyPressed(KEY_S)) {
-        salvarjogo(matriz, pacman, fantasmas, num_fantasmas, "save.bin");
+        salvarjogo(matriz, pacman, fantasmas, num_fantasmas, "save.bin", pellets);
         return;
     }
 

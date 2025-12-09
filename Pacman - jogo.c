@@ -128,10 +128,11 @@ void verificar_colisao(char **matriz, personagem *pacman, inimigo *fantasmas, TE
 
             // colisão com o fantasma vuneravel
             else if (fantasmas[f].estado == 1){
-                int pontos_fantasma = 100;
-                pacman->pontuacao += pontos_fantasma;
+                pacman->pontuacao += 100;
                 interacao(fantasmas[f].embaixo,pacman,pellets);
-                matriz[fantasmas[f].posicao_y][fantasmas[f].posicao_x] = fantasmas[f].embaixo;
+                if (!(fantasmas[f].posicao_y == pacman->posicao_y && fantasmas[f].posicao_x == pacman->posicao_x)) {
+                    matriz[fantasmas[f].posicao_y][fantasmas[f].posicao_x] = fantasmas[f].embaixo;
+                }
                 fantasmas[f].estado = 2; // morto
                 fantasmas[f].posicao_y = -100; 
                 fantasmas[f].posicao_x = -100;
@@ -227,7 +228,7 @@ int mov_fant_vermelho(inimigo f, personagem p){
     float dist_normalizada = distancia_fantasma.menor_distancia/58.0f;
 
     //A probabilidade do fantasma vermelho seguir o jogador é exponencial baseado em quão próximo do jogador ele se encontra
-    float probabilidade = expf(-1.8 * dist_normalizada) * 100;
+    float probabilidade = expf(-2 * dist_normalizada) * 100;
 
     if (GetRandomValue(0,100) < probabilidade) dir_f = distancia_fantasma.melhor_direcao;
     else dir_f = f.lista_posicoes[GetRandomValue(0,(f.tamanho_lista-1))];
@@ -258,15 +259,58 @@ int mov_fant_laranja(inimigo *f, personagem p, Texture2D sprite_medo, Texture2D 
 }
 
 int mov_fant_azul(inimigo f, personagem p){
+    dist_manha distancia_fantasma = dist_manhattan(f, p);
+    int dir_f;
+
+    if (GetRandomValue(0,100)> 75) dir_f = distancia_fantasma.melhor_direcao;
+    else dir_f = f.lista_posicoes[GetRandomValue(0,(f.tamanho_lista-1))];
+
+    return dir_f;
 }
 
-int mov_fant_rosa(inimigo f, personagem p, char **matriz){
-    char dir = p.direcao;
-    char dir_buf = p.dir_buffer;
+// int mov_fant_rosa(inimigo f, personagem p, char **matriz){
+//     int alvo[2];
+//     int pos_x = p.posicao_x;
+//     int pos_y = p.posicao_y;
+//     char dir = p.direcao;
+//     char dir_buf = p.dir_buffer;
+//     char dir_inv;
+//     int aumento_x = 0;
+//     int aumento_y = 0;
+//     int var_bandeira = 0;
+//     if (dir == 'D') {aumento_x +=1; dir_inv = 'E'};
+//     if (dir == 'B') {aumento_y +=1; dir_inv = 'C'};
+//     if (dir == 'E') {aumento_x -=1; dir_inv = 'D'};
+//     if (dir == 'C') {aumento_y -=1; dir_inv = 'B'};
+//     while (matriz[pos_y][pos_x] != '#'){
+//         int quantidade = quant_caminhos(matriz, pos_x, pos_y);
+//         if (quantidade == 1){
+//             var_bandeira = 1;
+//             if (dir == 'D') {pos_x = p.posicao_x; aumento_x = -1;}
+//             if (dir == 'B') {pos_y = p.posicao_y; aumento_y = -1;}
+//             if (dir == 'E') {pos_x = p.posicao_x; aumento_x = 1;}
+//             if (dir == 'C') {pos_y = p.posicao_y; aumento_y = 1;}
+//         }
+//         if (quantidade == 2){
+//             if (var_bandeira){
+//                 alvo[0] = pos_x;
+//                 alvo[1] = pos_y;
+//             }
+//         }
+//         pos_y += aumento_y;
+//         pos_x += aumento_x;
+//     }
+// }
 
-    while (1){
-        
-    }
+int quant_caminhos(int **matriz, int x, int y){
+    int caminhos = 0;
+    
+    if (matriz[y][x+1] == '.' || (matriz[y][x+1] == '_')) caminhos += 1; //direita
+    if (matriz[y+1][x] == '.' || (matriz[y+1][x] == '_')) caminhos += 1; //baixo
+    if (matriz[y][x-1] == '.' || (matriz[y][x-1] == '_')) caminhos += 1; // esquerda
+    if (matriz[y-1][x] == '.' || (matriz[y-1][x] == '_')) caminhos += 1; // cima
+
+    return caminhos;
 }
 
 void verificar_vitoria(int pellets, TELA *tela, personagem *pacman) {
@@ -316,15 +360,15 @@ int main(){
     if (!fantasma) return -1;
 
 
-    char **matriz = ler_arquivo("mapa2.txt", &qnt_pellets, &pacman, fantasma);
+    char **matriz = ler_arquivo("mapa3.txt", &qnt_pellets, &pacman, fantasma);
     if (!matriz) return -1;
+    qnt_pellets += 4;
    
     Rectangle img = {0, 0, pacman.sprite.width, pacman.sprite.height};
     Rectangle dest = {pacman.posicao_x * 20 + 10, pacman.posicao_y * 20 + 10, 20, 20}; // Pode estar duplicado, mas funciona
     Vector2 centro = {dest.width / 2, dest.height / 2};
 
     // Struct dos fantasmas + tudo que puder envolvê-los:    
-    // inimigo fantasmas[4]; // talvez seja melhor por esse vetor alocado dinamicamente
     int num_fantasmas = 4;
 
     Texture2D sprites_fantasmas[4] = {sprite_fantasma_v, sprite_fantasma_r, sprite_fantasma_l, sprite_fantasma_c};
@@ -335,7 +379,7 @@ int main(){
 
     while (!WindowShouldClose()){
 
-        menu(&tela, matriz, &pacman, fantasma, num_fantasmas, "mapa2.txt");
+        menu(&tela, matriz, &pacman, fantasma, num_fantasmas, "mapa3.txt", &qnt_pellets);
 
         switch (tela){
 
@@ -493,7 +537,8 @@ int main(){
                     
                     if (fantasma[f].id==0) dir_f = mov_fant_vermelho(fantasma[f],pacman);
                     if (fantasma[f].id==2) dir_f = mov_fant_laranja(&fantasma[f],pacman,sprite_F_L_medo, sprite_fantasma_l);
-                    else dir_f = fantasma[f].lista_posicoes[GetRandomValue(0,(fantasma[f].tamanho_lista-1))];
+                    if (fantasma[f].id==3) dir_f = mov_fant_azul(fantasma[f],pacman);
+                    if (fantasma[f].id==1) dir_f = fantasma[f].lista_posicoes[GetRandomValue(0,(fantasma[f].tamanho_lista-1))];
 
                     // DIREITA
                     if (dir_f == 0){
@@ -608,6 +653,11 @@ int main(){
         DrawText(txt_vidas, 10, ALTURA - 20, 20, WHITE);
 
         // Insere os sprites certos
+        //Pacman:
+        dest.x = pacman.posicao_x * 20 + 10;
+        dest.y = pacman.posicao_y * 20 + 10;
+        DrawTexturePro(pacman.sprite, img, dest, centro, rotacao, WHITE);
+
         for (int linha = 0; linha < 20; linha++){
             for (int coluna = 0; coluna < 40; coluna++){
                 switch (matriz[linha][coluna]){
@@ -616,11 +666,6 @@ int main(){
                     break;
                 case '.': // Pellet
                     DrawCircle(coluna * 20 + 10, linha * 20 + 10, 2, WHITE);
-                    break;
-                case 'P': // Pacman
-                    dest.x = coluna * 20 + 10;
-                    dest.y = linha * 20 + 10;
-                    DrawTexturePro(pacman.sprite, img, dest, centro, rotacao, WHITE);
                     break;
                 case 'T': // Portal
                     DrawTexture(sprite_portal, coluna * 20, linha * 20, WHITE);

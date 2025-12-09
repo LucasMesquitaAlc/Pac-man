@@ -33,7 +33,8 @@ void menu(
     personagem *pacman,
     inimigo *fantasmas_dinamico,
     int num_fantasmas,
-    const char *mapa_filename
+    const char *mapa_filename,
+    int *pellets
 );
 
 // Funções auxiliares exportadas pelo menu
@@ -42,7 +43,8 @@ void novojogo(
     personagem *pacman,
     inimigo *fantasmas,
     int num_fantasmas,
-    const char *mapa_filename
+    const char *mapa_filename,
+    int *num_pellets
 );
 
 void salvarjogo(
@@ -50,7 +52,8 @@ void salvarjogo(
     personagem *pacman,
     inimigo *fantasmas,
     int num_fantasmas,
-    const char *filename
+    const char *filename,
+    int *num_pellets
 );
 
 void carregarjogo(
@@ -58,7 +61,8 @@ void carregarjogo(
     personagem *pacman_ptr,
     inimigo *fantasmas,
     int num_fantasmas,
-    const char *filename
+    const char *filename,
+    int *num_pellets
 );
 
 void sairjogo();
