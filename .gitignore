@@ -6,3 +6,4 @@ backup/
 backup.c
 save.bin
 .gitignore
+*gitignore

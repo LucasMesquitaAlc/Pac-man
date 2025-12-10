@@ -14,6 +14,7 @@
 
 void iniciar_tela(){
     InitWindow(LARGURA, ALTURA, "PAC-MAN by BacharelBCT");
+    InitAudioDevice();
     SetTargetFPS(60);
     Image logo = LoadImage("sprites\\pacman_original.png");
     SetWindowIcon(logo);
@@ -48,7 +49,11 @@ void nao_voltar(int *tamanho_lista, int **lista, int Direcao){
     *(tamanho_lista) = tam_nova_lista;
 }
 
-void interacao(char objeto, personagem *p, int *pellets){
+void interacao(char objeto, personagem *p, int *pellets, Sound som[]){
+   
+    SetSoundVolume(som[2], 0.2f); 
+    if (!IsSoundPlaying(som[2])) PlaySound(som[2]);     // toca
+    
     int pontos_ganhos = 0;
     switch (objeto){
     case '.': // Pellet
@@ -102,7 +107,9 @@ void reset_posicoes(char **matriz, personagem *pacman, inimigo *fantasmas, int n
 }
 
 // identificar a colisão
-void verificar_colisao(char **matriz, personagem *pacman, inimigo *fantasmas, TELA *tela_ptr, int num_fantasmas, int *pellets){
+void verificar_colisao(char **matriz, personagem *pacman, inimigo *fantasmas, TELA *tela_ptr, int num_fantasmas, int *pellets, Sound som[]){
+    SetSoundVolume(som[0], 0.3f);
+    SetSoundVolume(som[1], 0.5f);
     if (*tela_ptr == gameover) return;
 
     for (int f = 0; f < num_fantasmas; f++){
@@ -111,6 +118,7 @@ void verificar_colisao(char **matriz, personagem *pacman, inimigo *fantasmas, TE
             // colisão com fantasma não vulneravel
             if (fantasmas[f].estado == 0){
                 pacman->vida--;
+                PlaySound(som[0]);
                 if (pacman->vida < 0) pacman->vida = 0;
                 pacman->pontuacao -= 200;
                 if (pacman->pontuacao < 0){
@@ -129,7 +137,8 @@ void verificar_colisao(char **matriz, personagem *pacman, inimigo *fantasmas, TE
             // colisão com o fantasma vuneravel
             else if (fantasmas[f].estado == 1){
                 pacman->pontuacao += 100;
-                interacao(fantasmas[f].embaixo,pacman,pellets);
+                PlaySound(som[1]);
+                interacao(fantasmas[f].embaixo,pacman,pellets, som);
                 if (!(fantasmas[f].posicao_y == pacman->posicao_y && fantasmas[f].posicao_x == pacman->posicao_x)) {
                     matriz[fantasmas[f].posicao_y][fantasmas[f].posicao_x] = fantasmas[f].embaixo;
                 }
@@ -313,10 +322,12 @@ int quant_caminhos(int **matriz, int x, int y){
     return caminhos;
 }
 
-void verificar_vitoria(int pellets, TELA *tela, personagem *pacman) {
+bool verificar_vitoria(int pellets, TELA *tela, personagem *pacman) {
     if (pellets == 0 && pacman->vida > 0) {
         *tela = vitoria;
+        return true;
     }
+    else return false;
 }
 
 void iniciar_pacman(personagem *pacman, Texture2D sprite){
@@ -335,9 +346,12 @@ int main(){
 
     TELA tela = jogo;
     float frame_movimento = 0.0f;
+    
+    // Música:
+    Music Musiquinha = LoadMusicStream("sons\\pacman_beginning.wav");
+    PlayMusicStream(Musiquinha);
 
-
-    //Tudo relacionado a sprites
+    // Tudo relacionado a sprites
     Texture2D sprite_pac1 = LoadTexture("sprites\\homenagem.png"); //sprite_pacman.png
     Texture2D sprite_pac2 = LoadTexture("sprites\\homenagem.png"); //sprite2_pacman.png
     Texture2D sprite_fantasma_v = LoadTexture("sprites\\f_v_pequeno.png"); //f_vermelho
@@ -348,7 +362,12 @@ int main(){
     Texture2D sprite_fantasma_fraco = LoadTexture("sprites/f_fraco.png");
     Texture2D sprite_parede = LoadTexture("sprites\\parede_pequena.png");
     Texture2D sprite_portal = LoadTexture("sprites\\portal.png");
-    
+
+    //Musicas 
+    Sound SomMorte = LoadSound("sons\\pacman_death.wav");
+    Sound ComeFantasma = LoadSound("sons\\pacman_eatghost.wav");
+    Sound ComePellet = LoadSound("sons\\pacman_chomp.wav");
+    Sound sons[] = {SomMorte,ComeFantasma,ComePellet};
 
     // Cria a struct do pacman, põe suas posições e seu sprite
     personagem pacman;
@@ -360,7 +379,16 @@ int main(){
     if (!fantasma) return -1;
 
 
-    char **matriz = ler_arquivo("mapa3.txt", &qnt_pellets, &pacman, fantasma);
+     // Criar função para passar níveis depois
+    const char *mapas[] = {
+        "mapas\\mapa3.txt",
+        "mapas\\mapa2.txt",
+        "mapas\\mapa1.txt"
+    };
+
+    int nivel = 0;
+
+    char **matriz = ler_arquivo(mapas[nivel], &qnt_pellets, &pacman, fantasma);
     if (!matriz) return -1;
     qnt_pellets += 4;
    
@@ -378,8 +406,8 @@ int main(){
     float tempo_fantasmas = 0.25;
 
     while (!WindowShouldClose()){
-
-        menu(&tela, matriz, &pacman, fantasma, num_fantasmas, "mapa3.txt", &qnt_pellets);
+        UpdateMusicStream(Musiquinha);
+        menu(&tela, matriz, &pacman, fantasma, num_fantasmas, mapas[nivel], &qnt_pellets);
 
         switch (tela){
 
@@ -409,7 +437,7 @@ int main(){
                     moveu = 1;
 
                     // soma a pontuação
-                    interacao(matriz[pacman.posicao_y][pacman.posicao_x + 1], &pacman, &qnt_pellets); 
+                    interacao(matriz[pacman.posicao_y][pacman.posicao_x + 1], &pacman, &qnt_pellets, sons); 
                     // verifica vitoria 
                     verificar_vitoria(qnt_pellets, &tela, &pacman);
 
@@ -430,7 +458,7 @@ int main(){
                     moveu = 1;
 
                     // soma a pontuação
-                    interacao(matriz[pacman.posicao_y][pacman.posicao_x - 1], &pacman, &qnt_pellets);
+                    interacao(matriz[pacman.posicao_y][pacman.posicao_x - 1], &pacman, &qnt_pellets, sons);
                     // verifica vitoria 
                     verificar_vitoria(qnt_pellets, &tela, &pacman);
 
@@ -451,7 +479,7 @@ int main(){
                     rotacao = 90;
 
                     // soma a pontuação
-                    interacao(matriz[pacman.posicao_y-1][pacman.posicao_x], &pacman, &qnt_pellets);
+                    interacao(matriz[pacman.posicao_y-1][pacman.posicao_x], &pacman, &qnt_pellets, sons);
                     // verifica vitoria 
                     verificar_vitoria(qnt_pellets, &tela, &pacman);
 
@@ -472,7 +500,7 @@ int main(){
                     rotacao = 270;
 
                     // soma a pontuação
-                    interacao(matriz[pacman.posicao_y+1][pacman.posicao_x], &pacman, &qnt_pellets);
+                    interacao(matriz[pacman.posicao_y+1][pacman.posicao_x], &pacman, &qnt_pellets, sons);
                     // verifica vitoria  
                     verificar_vitoria(qnt_pellets, &tela, &pacman);
 
@@ -612,7 +640,7 @@ int main(){
                     fantasma[f].tempo = 0.0f;
                 }
 
-                verificar_colisao(matriz, &pacman, fantasma,&tela, 4,&qnt_pellets);
+                verificar_colisao(matriz, &pacman, fantasma,&tela, 4,&qnt_pellets, sons);
                 
                 if (pacman.vida <= 0) {
                     tela = gameover;
@@ -630,6 +658,11 @@ int main(){
         } break;
         case vitoria:{
             mostrar_vitoria(&tela, &pacman.pontuacao, &pacman.vida);
+            if(verificar_vitoria(qnt_pellets, &tela, &pacman) == true){
+                nivel += 1;
+                if(nivel <= (sizeof(mapas))) novojogo(matriz, &pacman, fantasma, 4, mapas[nivel], &qnt_pellets);
+                qnt_pellets += 4;
+            }
         }break; //fim case vitoria
         
         } // fim do switch
@@ -720,6 +753,11 @@ int main(){
     
     // Fecha a janela
     CloseWindow();
+
+    UnloadSound(SomMorte);
+    UnloadSound(ComeFantasma);
+    UnloadSound(ComePellet);
+    CloseAudioDevice();
 
     for (int fant = 0; fant < 4; fant++)
         free(fantasma[fant].lista_posicoes);
