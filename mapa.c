@@ -19,19 +19,19 @@ void liberar_mapa(char **matriz){
     free(matriz);
 }
 
-char **ler_arquivo(const char *nome, int *pellets, personagem *pacman, inimigo *fantasmas){
+char **ler_arquivo(const char *nome, int *pellets, personagem *pacman, inimigo *fantasmas, int *num_fantasmas){
     // Pega o mapa
     FILE *arquivo = fopen(nome, "r");
     if (!arquivo) return NULL;
 
     // Passa pra matriz
     char **matriz = criar_matriz();
-    *pellets = ler_mapa(arquivo, matriz, pacman, fantasmas);
+    *pellets = ler_mapa(arquivo, matriz, pacman, fantasmas, num_fantasmas);
     fclose(arquivo);
     return matriz;
 }
 
-int ler_mapa(FILE *arquivo, char **matriz, personagem *pacman, inimigo *fantasmas) {
+int ler_mapa(FILE *arquivo, char **matriz, personagem *pacman, inimigo *fantasmas, int *num_fantasmas) {
     char caractere;
     int linha = 0;
     int coluna = 0;
@@ -67,10 +67,32 @@ int ler_mapa(FILE *arquivo, char **matriz, personagem *pacman, inimigo *fantasma
                 fantasmas[f].tamanho_lista = 0;
                 fantasmas[f].lista_posicoes = NULL;
                 fantasmas[f].id = f;
+                *num_fantasmas += 1;
                 f++;
             }
         coluna++;               
         }         
     }
     return num_pellets;
+}
+
+void passar_mapa(char mapa[], char arquivo[], int *fase){
+    char nome_arquivo[25];
+    *fase+=1;
+
+    sprintf(mapa, "mapa%d.txt", *fase);
+    sprintf(arquivo, "mapas\\%s",mapa);
+}
+
+int descobrir_ultima_fase(){
+    char mapa[15] = "mapa1.txt";
+    char nome_arquivo[25];
+
+    for (int x = 1; x<=20; x++){ //Assume que as fases só vão só até 20
+        sprintf(&mapa[4], "%d.txt", x);
+        sprintf(nome_arquivo, "mapas\\%s",mapa);
+
+        FILE *f = fopen(nome_arquivo,"r");
+        if (!f) return x-1;
+    }
 }

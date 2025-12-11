@@ -15,6 +15,8 @@ typedef struct
     int pontuacao;
     int vida;
     Texture2D sprite;
+    Rectangle img;
+    float rotacao;
     int x_inicial;
     int y_inicial;
 } personagem;
