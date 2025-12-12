@@ -7,26 +7,29 @@
 #include "menu.h"
 #include <math.h>
 
-#define LARGURA 800
-#define ALTURA 440
+#define LARGURA 1600
+#define ALTURA 840
 #define LinhaMatriz 20
 #define ColunaMatriz 40
 
 void iniciar_tela(){
-    InitWindow(LARGURA, ALTURA, "PAC-MAN by BacharelBCT");
+    // Inicia a tela
+    InitWindow(LARGURA, ALTURA, "PAC-MAN");
     InitAudioDevice();
     SetTargetFPS(60);
     Image logo = LoadImage("sprites\\pacman_original.png");
     SetWindowIcon(logo);
-}
+} 
 
 void adicionar_pos(int *tamanho_lista, int **lista, int valor){
+    // Aumenta o espaço de uma lista dinâmica e insere o valor na última posição
     *tamanho_lista += 1;
     *lista = realloc(*lista, (*tamanho_lista) * sizeof(int));
     (*lista)[*tamanho_lista - 1] = valor;
 }
 
 void nao_voltar(int *tamanho_lista, int **lista, int Direcao){
+    // Remove a opção do fantasma voltar de onde veio
     int tam_nova_lista = *tamanho_lista;
 
     for (int i = 0; i < *tamanho_lista; i++){
@@ -50,7 +53,7 @@ void nao_voltar(int *tamanho_lista, int **lista, int Direcao){
 }
 
 void interacao(char objeto, personagem *p, int *pellets, Sound som[]){
-   
+    // Interação do Pac-Man com o cenário
     SetSoundVolume(som[2], 0.2f);
     SetSoundVolume(som[3], 0.8f);  
     if (!IsSoundPlaying(som[2]) && !IsSoundPlaying(som[4])) PlaySound(som[2]);     // toca
@@ -74,7 +77,7 @@ void interacao(char objeto, personagem *p, int *pellets, Sound som[]){
 
 // função para resetar a posição
 void reset_posicoes(char **matriz, personagem *pacman, inimigo *fantasmas, int num_fantasmas){
-    
+    // Função para resetar posição do fantasma e do Pac-Man
     matriz[pacman->posicao_y][pacman->posicao_x] = '_';
 
     // volta o pacman pra posição inicial
@@ -114,6 +117,7 @@ void reset_posicoes(char **matriz, personagem *pacman, inimigo *fantasmas, int n
 
 // identificar a colisão
 void verificar_colisao(char **matriz, personagem *pacman, inimigo *fantasmas, TELA *tela_ptr, int num_fantasmas, int *pellets, Sound som[]){
+    // Identifica se o Pac-Man colidiu com um fantasma
     SetSoundVolume(som[0], 0.3f);
     SetSoundVolume(som[1], 0.5f);
     if (*tela_ptr == gameover) return;
@@ -264,9 +268,8 @@ int mov_fant_laranja(inimigo *f, personagem p, Texture2D sprite_medo, Texture2D 
     float dist_normalizada = distancia_fantasma.maior_distancia/58.0f;
 
     //A probabilidade do fantasma laranja se afastar do jogador é exponencial baseado em quão próximo do jogador ele se encontra
-    float probabilidade = expf(-2.3 * dist_normalizada) * 100;
-
-    if (probabilidade > 90) f->sprite = sprite_medo;
+    float probabilidade = expf(-1.8 * dist_normalizada) * 100;
+    if (probabilidade > 85) f->sprite = sprite_medo;
     else f->sprite = sprite;
 
     if (GetRandomValue(0,100) < probabilidade) dir_f = distancia_fantasma.pior_direcao;
@@ -312,18 +315,9 @@ int mov_fant_rosa(inimigo f, personagem p, char **matriz){
     }
 }
 
-int quant_caminhos(char **matriz, int x, int y){
-    int caminhos = 0;
-    
-    if (matriz[y][x+1] == '.' || (matriz[y][x+1] == '_')) caminhos += 1; //direita
-    if (matriz[y+1][x] == '.' || (matriz[y+1][x] == '_')) caminhos += 1; //baixo
-    if (matriz[y][x-1] == '.' || (matriz[y][x-1] == '_')) caminhos += 1; // esquerda
-    if (matriz[y-1][x] == '.' || (matriz[y-1][x] == '_')) caminhos += 1; // cima
-
-    return caminhos;
-}
 
 bool verificar_vitoria(int pellets, TELA *tela, personagem *pacman, int fase_atual, int fase_final) {
+    // Verifica se a fase foi ganha
     if (pellets == 0 && pacman->vida > 0) {
         if (fase_atual == fase_final) *tela = venceu_final;
         else *tela = vitoria;
@@ -358,18 +352,21 @@ int main(){
     float frame_movimento = 0.0f;
 
     // Tudo relacionado a sprites
-    Texture2D sprite_pac1 = LoadTexture("sprites\\homenagem.png"); //sprite_pacman.png
-    Texture2D sprite_pac2 = LoadTexture("sprites\\homenagem.png"); //sprite2_pacman.png
-    Texture2D sprite_fantasma_v = LoadTexture("sprites\\f_v_pequeno.png"); //f_vermelho
-    Texture2D sprite_fantasma_r = LoadTexture("sprites\\f_r_pequeno.png"); //f_rosa
-    Texture2D sprite_fantasma_l = LoadTexture("sprites\\f_l_pequeno.png"); //f_laranja
-    Texture2D sprite_fantasma_c = LoadTexture("sprites\\f_a_pequeno.png"); //f_ciano
-    Texture2D sprite_F_L_medo = LoadTexture("sprites\\f_l_pequeno_correndo.png");
-    Texture2D sprite_fantasma_fraco = LoadTexture("sprites/f_fraco.png");
-    Texture2D sprite_parede = LoadTexture("sprites\\parede_pequena.png");
-    Texture2D sprite_portal = LoadTexture("sprites\\portal.png");
-    Texture2D sprite_vida = LoadTexture("sprites\\pacman_original.png");
-    //Musicas 
+    Texture2D sprite_pac1 = LoadTexture("sprites\\sprite_pacman.png");
+    Texture2D sprite_pac2 = LoadTexture("sprites\\sprite2_pacman.png");
+    Texture2D sprite_fantasma_v = LoadTexture("sprites\\f_vermelho.png");
+    Texture2D sprite_fantasma_v_fraco = LoadTexture("sprites/f_vermelho_fraco.png");
+    Texture2D sprite_fantasma_r = LoadTexture("sprites\\f_rosa.png");
+    Texture2D sprite_fantasma_r_fraco = LoadTexture("sprites/f_rosa_fraco.png");
+    Texture2D sprite_fantasma_l = LoadTexture("sprites\\f_laranja.png");
+    Texture2D sprite_fantasma_l_fraco = LoadTexture("sprites/f_laranja_fraco.png");
+    Texture2D sprite_fantasma_c = LoadTexture("sprites\\f_ciano.png");
+    Texture2D sprite_fantasma_c_fraco = LoadTexture("sprites/f_ciano_fraco.png");
+    Texture2D sprite_F_L_medo = LoadTexture("sprites\\f_laranja_correndo.png");
+    Texture2D sprite_parede = LoadTexture("sprites\\parede_nova.png");
+    Texture2D sprite_portal = LoadTexture("sprites\\portal40.png");
+
+    // Musicas 
     Sound SomMorte = LoadSound("sons\\pacman_death.wav");
     Sound ComeFantasma = LoadSound("sons\\pacman_eatghost.wav");
     Sound ComePellet = LoadSound("sons\\pacman_chomp.wav");
@@ -386,23 +383,23 @@ int main(){
     fantasma = (inimigo*) malloc(sizeof(inimigo) * 4);
     if (!fantasma) return -1;
 
-
+    // Inicia o mapa
     char fase[15] = "mapa1.txt";
     char nome_arquivo[25] = "mapas\\mapa1.txt";
     int fase_atual = 1;
     int ultima_fase = descobrir_ultima_fase();
 
-
+    
+    // Inicia matriz
     int num_fantasmas = 0;
     char **matriz = ler_arquivo(nome_arquivo, &qnt_pellets, &pacman, fantasma, &num_fantasmas);
     if (!matriz) return -1;
     qnt_pellets += num_fantasmas;
    
-    Rectangle dest = {pacman.posicao_x * 20 + 10, pacman.posicao_y * 20 + 10, 20, 20}; // Pode estar duplicado, mas funciona
+    Rectangle dest = {pacman.posicao_x * 40 + 20, pacman.posicao_y * 40 + 20, 40, 40};
     Vector2 centro = {dest.width / 2, dest.height / 2};
 
-    // Struct dos fantasmas + tudo que puder envolvê-los:    
-
+    // Sprites dos fantasmas  
     Texture2D sprites_fantasmas[4] = {sprite_fantasma_v, sprite_fantasma_r, sprite_fantasma_l, sprite_fantasma_c};
     for (int f=0; f<4; f++) fantasma[f].sprite = sprites_fantasmas[f];
 
@@ -432,7 +429,7 @@ int main(){
 
                 // Interações do Pac-Man com o cenário:
                 if (frame_movimento >= 0.25f){
-
+                    // Buffer de direção
                     if(pacman.dir_buffer == 'D' && verifica_mov_pac('D', matriz, &pacman)) pacman.direcao = 'D';
                     if(pacman.dir_buffer == 'E' && verifica_mov_pac('E', matriz, &pacman)) pacman.direcao = 'E';
                     if(pacman.dir_buffer == 'C' && verifica_mov_pac('C', matriz, &pacman)) pacman.direcao = 'C';
@@ -540,7 +537,6 @@ int main(){
 
                 // Mecânica dos fantasmas:
                 for (int f = 0; f < num_fantasmas; f++){
-                    if (fantasma[f].estado == 0) fantasma[f].sprite = sprites_fantasmas[f];
                     if (fantasma[f].estado == 2) continue;
 
                     fantasma[f].tempo += GetFrameTime();
@@ -638,9 +634,15 @@ int main(){
                             fantasma[f].posicao_y--;
                             fantasma[f].ultimo_mov = 1;
                         }
+                        // Pac-Man invulnerável
                         if (pacman.estado_pac == 1){
                             fantasma[f].estado = 1;
-                            fantasma[f].sprite = sprite_fantasma_fraco;
+                            for(int f=0; f < num_fantasmas; f++){
+                                if (fantasma[f].id == 0) fantasma[f].sprite = sprite_fantasma_v_fraco;
+                                if (fantasma[f].id == 1) fantasma[f].sprite = sprite_fantasma_r_fraco;
+                                if (fantasma[f].id == 2) fantasma[f].sprite = sprite_fantasma_l_fraco;
+                                if (fantasma[f].id == 3) fantasma[f].sprite = sprite_fantasma_c_fraco;
+                            }
                             tempo_fantasmas = 0.33;
                             
                             if (pacman.tempo_invu >= 8.0f){
@@ -687,37 +689,37 @@ int main(){
 
         // Desenho do score
         char txt_score[50];
-        sprintf(txt_score, "SCORE: %d", pacman.pontuacao);
-        DrawText(txt_score, LARGURA - 150, ALTURA - 20, 20, YELLOW);
+        sprintf(txt_score, "SCORE: %06d", pacman.pontuacao);
+        DrawText(txt_score, LARGURA - 330, ALTURA - 40, 40, YELLOW);
 
         //Desenha o pellet
         char pellets[20];
         sprintf(txt_score, "Pellets: %d", qnt_pellets);
-        DrawText(txt_score, LARGURA - 400, ALTURA - 20, 20, YELLOW);
+        DrawText(txt_score, LARGURA - 650, ALTURA - 40, 40, YELLOW);
         
         // Desenho dos níveis:
         char level[20];
         sprintf(level, "Level: %d", fase_atual);
-        DrawText(level, LARGURA - 500, ALTURA - 20, 20, YELLOW);
+        DrawText(level, LARGURA - 1000, ALTURA - 40, 40, YELLOW);
 
         // desenha as vidas
         char txt_vidas[10];
         sprintf(txt_vidas, "VIDAS: ", pacman.vida);
-        DrawText(txt_vidas, 10, ALTURA - 20, 20, WHITE);
+        DrawText(txt_vidas, LARGURA - 1590, ALTURA - 40, 40, WHITE);
         switch(pacman.vida){
             case 3:{
-                DrawTexture(sprite_pac2, 90, ALTURA - 20, WHITE);
-                DrawTexture(sprite_pac2, 130, ALTURA - 20, WHITE);
-                DrawTexture(sprite_pac2, 170, ALTURA - 20, WHITE);
+                DrawTexture(sprite_pac2, 150, ALTURA - 40, WHITE);
+                DrawTexture(sprite_pac2, 190, ALTURA - 40, WHITE);
+                DrawTexture(sprite_pac2, 230, ALTURA - 40, WHITE);
             } break;
 
             case 2:{
-                DrawTexture(sprite_pac2, 90, ALTURA - 20, WHITE);
-                DrawTexture(sprite_pac2, 130, ALTURA - 20, WHITE);
+                DrawTexture(sprite_pac2, 150, ALTURA - 40, WHITE);
+                DrawTexture(sprite_pac2, 190, ALTURA - 40, WHITE);
             } break;
 
             case 1:{
-                DrawTexture(sprite_pac2, 90, ALTURA - 20, WHITE);
+                DrawTexture(sprite_pac2, 150, ALTURA - 40, WHITE);
             } break;
 
             case 0:{
@@ -726,29 +728,29 @@ int main(){
         }
         // Insere os sprites certos
         //Pacman:
-        dest.x = pacman.posicao_x * 20 + 10;
-        dest.y = pacman.posicao_y * 20 + 10;
+        dest.x = pacman.posicao_x * 40 + 20;
+        dest.y = pacman.posicao_y * 40 + 20;
         DrawTexturePro(pacman.sprite, pacman.img, dest, centro, pacman.rotacao, WHITE);
 
         for (int linha = 0; linha < 20; linha++){
             for (int coluna = 0; coluna < 40; coluna++){
                 switch (matriz[linha][coluna]){
                 case '#': // Parede
-                    DrawTexture(sprite_parede, coluna * 20, linha * 20, WHITE);
+                    DrawTexture(sprite_parede, coluna * 40, linha * 40, WHITE);
                     break;
                 case '.': // Pellet
-                    DrawCircle(coluna * 20 + 10, linha * 20 + 10, 2, WHITE);
+                    DrawCircle(coluna * 40 + 20, linha * 40 + 20, 3, WHITE);
                     break;
                 case 'T': // Portal
-                    DrawTexture(sprite_portal, coluna * 20, linha * 20, WHITE);
+                    DrawTexture(sprite_portal, coluna * 40, linha * 40, WHITE);
                     break;
                 case 'o': // Power Pellet
-                    DrawCircle(coluna * 20 + 10, linha * 20 + 10, 5, WHITE);
+                    DrawCircle(coluna * 40 + 20, linha * 40 + 20, 8, WHITE);
                     break;
                 case 'F': // Fantasma
                     for (int j = 0; j < 4; j++){
                         if (fantasma[j].estado != 2 && fantasma[j].posicao_x == coluna && fantasma[j].posicao_y == linha){
-                            DrawTexture(fantasma[j].sprite, coluna * 20, linha * 20, WHITE);
+                            DrawTexture(fantasma[j].sprite, coluna * 40, linha * 40, WHITE);
                         }
                     }
                     break;
@@ -757,40 +759,40 @@ int main(){
         }
         if (tela == tela_inicial) {
             DrawRectangle(0, 0, LARGURA, ALTURA, Fade(BLACK, 0.85f));
-            DrawText("BEM VINDO AO PACMAN", LARGURA / 2 - MeasureText("BEM VINDO AO PACMAN", 40) / 2, 120, 40, YELLOW);
-            DrawText("Novo Jogo (N)", LARGURA / 2 - 100, 220, 20, WHITE);
-            DrawText("Carregar Jogo (C)", LARGURA / 2 - 100, 250, 20, WHITE);
-            DrawText("Sair (Q)", LARGURA / 2 - 100, 280, 20, WHITE);
+            DrawText("BEM VINDO AO PACMAN", LARGURA / 2 - MeasureText("BEM VINDO AO PACMAN", 40), 120, 80, YELLOW);
+            DrawText("Novo Jogo (N)", LARGURA / 2 - MeasureText("Novo Jogo (N)", 20), 320, 40, WHITE);
+            DrawText("Carregar Jogo (C)", LARGURA / 2 - MeasureText("Carregar Jogo (C)", 20), 420, 40, WHITE);
+            DrawText("Sair (Q)", LARGURA / 2 - MeasureText("Sair (Q)", 20), 520, 40, WHITE);
         }
         if (tela == pausa){
             DrawRectangle(0, 0, LARGURA, ALTURA, Fade(BLACK, 0.85f));
-            DrawText("MENU", LARGURA / 2 - MeasureText("MENU", 40) / 2, 120, 40, YELLOW);
-            DrawText("Novo Jogo (N)", LARGURA / 2 - 100, 200, 20, WHITE);
-            DrawText("Carregar Jogo (C)", LARGURA / 2 - 100, 230, 20, WHITE);
-            DrawText("Salvar Jogo (S)", LARGURA / 2 - 100, 260, 20, WHITE);
-            DrawText("Voltar ao Jogo (V/TAB)", LARGURA / 2 - 100, 290, 20, WHITE);
-            DrawText("Sair (Q)", LARGURA / 2 - 100, 320, 20, WHITE);
+            DrawText("MENU", LARGURA / 2 - MeasureText("MENU", 40), 120, 80, YELLOW);
+            DrawText("Novo Jogo (N)", LARGURA / 2 - MeasureText("Novo Jogo (N)", 20), 320, 40, WHITE);
+            DrawText("Carregar Jogo (C)", LARGURA / 2 - MeasureText("Carregar Jogo (C)", 20), 420, 40, WHITE);
+            DrawText("Salvar Jogo (S)", LARGURA / 2 - MeasureText("Salvar Jogo (S)", 20), 520, 40, WHITE);
+            DrawText("Voltar ao Jogo (V/TAB)", LARGURA / 2 - MeasureText("Voltar ao Jogo (V/TAB)", 20), 620, 40, WHITE);
+            DrawText("Sair (Q)", LARGURA / 2 - MeasureText("Sair (Q)", 20), 720, 40, WHITE);
         }
 
         if (tela == gameover) {
             DrawRectangle(0, 0, LARGURA, ALTURA, Fade(BLACK, 0.85f));
-            DrawText("GAME OVER", LARGURA/2 - MeasureText("GAME OVER", 60)/2, 150, 60, RED);
+            DrawText("GAME OVER", LARGURA/2 - MeasureText("GAME OVER", 60), 150, 120, RED);
             char textoScore[50];
             sprintf(textoScore, "Pontuacao: %d", pacman.pontuacao);
-            DrawText(textoScore, LARGURA/2 - MeasureText(textoScore, 30)/2, 240, 30, WHITE);
-            DrawText("Pressione TAB para Menu", LARGURA/2 - MeasureText("Pressione TAB para Menu", 20)/2, 300, 20, WHITE );
-            DrawText("Pressione Q para Sair", LARGURA/2 - MeasureText("Pressione Q para Sair", 20)/2, 340, 20, WHITE );
+            DrawText(textoScore, LARGURA/2 - MeasureText(textoScore, 30), 350, 60, WHITE);
+            DrawText("Pressione TAB para Menu", LARGURA/2 - MeasureText("Pressione TAB para Menu", 20), 500, 40, WHITE );
+            DrawText("Pressione Q para Sair", LARGURA/2 - MeasureText("Pressione Q para Sair", 20), 600, 40, WHITE );
         }
         if (tela == vitoria){
             StopSound(sons[4]);
             DrawRectangle(0, 0, LARGURA, ALTURA, Fade(BLACK, 0.85f));
-            DrawText("VOCE VENCEU O NIVEL!", LARGURA / 2 - MeasureText("VOCE VENCEU O NIVEL!", 40) / 2, 120, 40, YELLOW);
-            DrawText(TextFormat("Pontuacao: %d", pacman.pontuacao), LARGURA / 2 - 100, 200, 20, GREEN);
-            DrawText(TextFormat("Vidas restantes: %d", pacman.vida), LARGURA / 2 - 100, 230, 20, RED);
-            DrawText("Avancar de Nivel (ENTER)", LARGURA / 2 - 100, 280, 20, WHITE);
-            DrawText("Salvar Jogo (S)", LARGURA / 2 - 100, 310, 20, WHITE);
-            DrawText("Sair sem salvar (Q)", LARGURA / 2 - 100, 340, 20, WHITE);
-            DrawText("Menu de Pausa (TAB)", LARGURA / 2 - 100, 370, 20, WHITE);
+            DrawText("VOCE VENCEU O NIVEL!", LARGURA / 2 - MeasureText("VOCE VENCEU O NIVEL!", 40), 120, 80, YELLOW);
+            DrawText(TextFormat("Pontuacao: %06d", pacman.pontuacao), LARGURA / 2 - 200, 320, 40, GREEN);
+            DrawText(TextFormat("Vidas restantes: %d", pacman.vida), LARGURA / 2 - 200, 400, 40, RED);
+            DrawText("Avancar de Nivel (ENTER)", LARGURA/2 - MeasureText("Avancar de Nivel (ENTER)", 20), 480, 40, WHITE);
+            DrawText("Salvar Jogo (S)", LARGURA/2 - MeasureText("Salvar Jogo (S)", 20), 560, 40, WHITE);
+            DrawText("Sair sem salvar (Q)", LARGURA/2 - MeasureText("Sair sem salvar (Q)", 20), 640, 40, WHITE);
+            DrawText("Menu de Pausa (TAB)", LARGURA/2 - MeasureText("Menu de Pausa (TAB)", 20), 720, 40, WHITE);
 
             if (IsKeyPressed(KEY_ENTER)){
                 tela = jogo;
@@ -800,19 +802,20 @@ int main(){
         if (tela == venceu_final) { 
             StopSound(sons[4]);
             DrawRectangle(0, 0, LARGURA, ALTURA, Fade(BLACK, 0.85f));
-            DrawText("VOCE VENCEU O JOGO!", LARGURA / 2 - MeasureText("VOCE VENCEU O JOGO!", 40) / 2, 120,40, YELLOW);
-            DrawText(TextFormat("Pontuacao Total: %d", pacman.pontuacao), LARGURA / 2 - 100, 200, 20, GREEN);
-            DrawText("Voltar ao Inicio (ESC)", LARGURA / 2 - 100, 260, 20, WHITE);
-            DrawText("Voltar ao Menu (TAB)", LARGURA / 2 - 100, 290, 20, WHITE);
-            DrawText("Sair (Q)", LARGURA / 2 - 100, 320, 20, WHITE);
+            DrawText("VOCE VENCEU O JOGO!", LARGURA / 2 - MeasureText("VOCE VENCEU O JOGO!", 40), 120,80, YELLOW);
+            DrawText(TextFormat("Pontuacao Total: %06d", pacman.pontuacao), LARGURA / 2 - 200, 320, 40, GREEN);
+            DrawText("Voltar ao Inicio (ESC)", LARGURA / 2 - MeasureText("Voltar ao Inicio (ESC)", 20), 420, 40, WHITE);
+            DrawText("Voltar ao Menu (TAB)", LARGURA / 2 - MeasureText("Voltar ao Menu (TAB)", 20), 520, 40, WHITE);
+            DrawText("Sair (Q)", LARGURA / 2 - MeasureText("Sair (Q)", 20), 620, 40, WHITE);
         
         if (IsKeyPressed(KEY_ESCAPE)) tela = tela_inicial;
+        if (IsKeyPressed(KEY_Q)) sairjogo(&tela);
         }   
         // Termina o desenho
         EndDrawing();
     }
     Texture2D sprites[] = {sprite_pac1,sprite_pac2, sprite_fantasma_v, sprite_fantasma_l,
-    sprite_fantasma_c, sprite_fantasma_r, sprite_F_L_medo, sprite_fantasma_fraco, sprite_portal, sprite_parede};
+    sprite_fantasma_c, sprite_fantasma_r, sprite_F_L_medo, sprite_fantasma_v_fraco, sprite_fantasma_r_fraco, sprite_fantasma_l_fraco, sprite_fantasma_c_fraco, sprite_portal, sprite_parede};
     for (int x = 0; x<10; x++) UnloadTexture(sprites[x]);
     
     // Fecha a janela

@@ -1,7 +1,3 @@
 output/
-inuteis_por_agora/
-*.txt
 *.exe
-backup/
-backup.c
 save.bin

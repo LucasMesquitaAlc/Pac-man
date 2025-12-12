@@ -18,17 +18,6 @@ typedef enum TELA {
     sair = 6
 } TELA;
 
-/*
-  Nota: nova assinatura do menu (sem variaveis globais).
-  - matriz: matriz atual do mapa (20x40) (é sobrescrita por novojogo/carregar)
-  - pacman: ponteiro para personagem
-  - pontuacao, vidas_ptr: ponteiros
-  - fantasmas: vetor de inimigo (tamanho num_fantasmas)
-  - num_fantasmas: numero de fantasmas (ex: 4)
-  - inicial_pacman_x/y: posições iniciais guardadas na main
-  - inicial_fantasma_x/y: arrays com posições iniciais (main)
-  - mapa_filename: nome do arquivo do mapa (ex: "mapa1.txt")
-*/
 void menu(
     TELA *tela_ptr,
     char **matriz,
@@ -39,7 +28,7 @@ void menu(
     int *pellets,
     Sound musica[], 
     Texture2D sprites[]
-);
+); // Menu
 
 // Funções auxiliares exportadas pelo menu
 void novojogo(
@@ -53,7 +42,7 @@ void novojogo(
     int vida, 
     Texture2D sprites[],
     Sound musica[]
-);
+); // Inicia novo jogo
 
 void salvarjogo(
     char **matriz,
@@ -62,7 +51,7 @@ void salvarjogo(
     int *num_fantasmas,
     char *filename,
     int *num_pellets
-);
+); // Salva o jogo em arquivo binário
 
 void carregarjogo(
     char **matriz,
@@ -71,19 +60,19 @@ void carregarjogo(
     int *num_fantasmas,
     char *filename,
     int *num_pellets
-);
+); // Carrega o jogo salvo no arquivo
 
-void sairjogo(TELA *tela_ptr);
+void sairjogo(TELA *tela_ptr); // Fecha a janela
 
-void mostrar_gameover(TELA *tela_ptr, int *pontuacao, int *vidas_ptr);
+void mostrar_gameover(TELA *tela_ptr, int *pontuacao, int *vidas_ptr); // Tela de game over
 
-void mostrar_vitoria(TELA *tela_ptr,
+void mostrar_vitoria(TELA *tela_ptr, 
     int *pontuacao,
     int *vidas_ptr,
     char **matriz,
     personagem *pacman,
     inimigo *fantasmas,
     int *num_fantasmas,
-    int *pellets);
+    int *pellets); // Tela de vitória mostrada a cada avanço de fase
 
 #endif
