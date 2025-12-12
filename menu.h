@@ -12,10 +12,10 @@ typedef enum TELA {
     jogo = 0,
     pausa = 1,
     gameover = 2,
-    nivel = 3,
-    vitoria = 4,
-    venceu_final = 5,
-    tela_inicial = 6
+    vitoria = 3,
+    venceu_final = 4,
+    tela_inicial = 5,
+    sair = 6
 } TELA;
 
 /*
@@ -37,7 +37,8 @@ void menu(
     int *num_fantasmas,
     char *mapa_filename,
     int *pellets,
-    Sound musica
+    Sound musica[], 
+    Texture2D sprites[]
 );
 
 // Funções auxiliares exportadas pelo menu
@@ -49,7 +50,9 @@ void novojogo(
     char *mapa_filename,
     int *num_pellets,
     int pontuacao,
-    int vida
+    int vida, 
+    Texture2D sprites[],
+    Sound musica[]
 );
 
 void salvarjogo(
@@ -70,10 +73,17 @@ void carregarjogo(
     int *num_pellets
 );
 
-void sairjogo();
+void sairjogo(TELA *tela_ptr);
 
 void mostrar_gameover(TELA *tela_ptr, int *pontuacao, int *vidas_ptr);
 
-void mostrar_vitoria(TELA *tela_ptr, int *pontuacao, int *vidas_ptr);
+void mostrar_vitoria(TELA *tela_ptr,
+    int *pontuacao,
+    int *vidas_ptr,
+    char **matriz,
+    personagem *pacman,
+    inimigo *fantasmas,
+    int *num_fantasmas,
+    int *pellets);
 
 #endif

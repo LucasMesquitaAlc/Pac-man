@@ -83,11 +83,13 @@ void reset_posicoes(char **matriz, personagem *pacman, inimigo *fantasmas, int n
     matriz[pacman->posicao_y][pacman->posicao_x] = 'P';
 
     // Limpa qualquer fantasma no mapa
+    int i=0;
     for (int y = 0; y < 20; y++){
         for (int x = 0; x < 40; x++)
         {
             if (matriz[y][x] == 'F')
-                matriz[y][x] = '_';
+                matriz[y][x] = fantasmas[i].embaixo;
+                i++;
         }
     }
 
@@ -96,11 +98,11 @@ void reset_posicoes(char **matriz, personagem *pacman, inimigo *fantasmas, int n
         if (fantasmas[f].estado == 2){
             continue;
         }
+        // define corretamente o que tem embaixo
+        fantasmas[f].embaixo = matriz[fantasmas[f].y_inicial][fantasmas[f].x_inicial];
+
         fantasmas[f].posicao_x = fantasmas[f].x_inicial;
         fantasmas[f].posicao_y = fantasmas[f].y_inicial;
-
-        // define corretamente o que tem embaixo
-        fantasmas[f].embaixo = matriz[fantasmas[f].posicao_y][fantasmas[f].posicao_x];
 
         // reposiciona visivelmente
         matriz[fantasmas[f].posicao_y][fantasmas[f].posicao_x] = 'F';
@@ -117,6 +119,7 @@ void verificar_colisao(char **matriz, personagem *pacman, inimigo *fantasmas, TE
     if (*tela_ptr == gameover) return;
 
     for (int f = 0; f < num_fantasmas; f++){
+        
         if (pacman->posicao_x == fantasmas[f].posicao_x && pacman->posicao_y == fantasmas[f].posicao_y){
 
             // colisão com fantasma não vulneravel
@@ -147,8 +150,9 @@ void verificar_colisao(char **matriz, personagem *pacman, inimigo *fantasmas, TE
                     matriz[fantasmas[f].posicao_y][fantasmas[f].posicao_x] = fantasmas[f].embaixo;
                 }
                 fantasmas[f].estado = 2; // morto
-                fantasmas[f].posicao_y = -100; 
-                fantasmas[f].posicao_x = -100;
+                if(fantasmas[f].estado == 2){ 
+                fantasmas[f].id--;
+                num_fantasmas -= 1;}
                 fantasmas[f].embaixo = '_';
             }
         }
@@ -364,7 +368,7 @@ int main(){
     Texture2D sprite_fantasma_fraco = LoadTexture("sprites/f_fraco.png");
     Texture2D sprite_parede = LoadTexture("sprites\\parede_pequena.png");
     Texture2D sprite_portal = LoadTexture("sprites\\portal.png");
-
+    Texture2D sprite_vida = LoadTexture("sprites\\pacman_original.png");
     //Musicas 
     Sound SomMorte = LoadSound("sons\\pacman_death.wav");
     Sound ComeFantasma = LoadSound("sons\\pacman_eatghost.wav");
@@ -403,8 +407,8 @@ int main(){
     for (int f=0; f<4; f++) fantasma[f].sprite = sprites_fantasmas[f];
 
     float tempo_fantasmas = 0.25f;
-    while (!WindowShouldClose()){
-        menu(&tela, matriz, &pacman, fantasma, &num_fantasmas, nome_arquivo, &qnt_pellets, sons[3]);
+    while (!WindowShouldClose() && tela != sair){
+        menu(&tela, matriz, &pacman, fantasma, &num_fantasmas, nome_arquivo, &qnt_pellets, sons, sprites_fantasmas);
         
         switch (tela){
 
@@ -535,7 +539,8 @@ int main(){
                 }
 
                 // Mecânica dos fantasmas:
-                for (int f = 0; f < 4; f++){
+                for (int f = 0; f < num_fantasmas; f++){
+                    if (fantasma[f].estado == 0) fantasma[f].sprite = sprites_fantasmas[f];
                     if (fantasma[f].estado == 2) continue;
 
                     fantasma[f].tempo += GetFrameTime();
@@ -637,7 +642,7 @@ int main(){
                             fantasma[f].estado = 1;
                             fantasma[f].sprite = sprite_fantasma_fraco;
                             tempo_fantasmas = 0.33;
-
+                            
                             if (pacman.tempo_invu >= 8.0f){
                                 for (int x = 0; x < 4; x++){
                                     if (fantasma[x].estado != 2) {
@@ -653,7 +658,7 @@ int main(){
                         fantasma[f].tempo = 0.0f;
                     }
 
-                    verificar_colisao(matriz, &pacman, fantasma,&tela, 4,&qnt_pellets, sons);
+                    verificar_colisao(matriz, &pacman, fantasma,&tela, num_fantasmas,&qnt_pellets, sons);
                     
                     if (pacman.vida <= 0) tela = gameover;              
                 }
@@ -667,10 +672,10 @@ int main(){
             mostrar_gameover(&tela, &pacman.pontuacao, &pacman.vida);
         } break;
         case vitoria:{
-            mostrar_vitoria(&tela, &pacman.pontuacao, &pacman.vida);
+            mostrar_vitoria(&tela, &pacman.pontuacao, &pacman.vida, matriz, &pacman, fantasma, &num_fantasmas, &qnt_pellets);
             if(verificar_vitoria(qnt_pellets, &tela, &pacman,fase_atual, ultima_fase) == true){
                 passar_mapa(fase,nome_arquivo,&fase_atual);
-                if(fase_atual <= ultima_fase) novojogo(matriz, &pacman, fantasma, &num_fantasmas, nome_arquivo, &qnt_pellets, pacman.pontuacao, pacman.vida);
+                if(fase_atual <= ultima_fase) novojogo(matriz, &pacman, fantasma, &num_fantasmas, nome_arquivo, &qnt_pellets, pacman.pontuacao, pacman.vida, sprites_fantasmas, sons);
                 qnt_pellets += num_fantasmas;
             }
         }break; //fim case vitoria
@@ -688,13 +693,37 @@ int main(){
         //Desenha o pellet
         char pellets[20];
         sprintf(txt_score, "Pellets: %d", qnt_pellets);
-        DrawText(txt_score, LARGURA - 500, ALTURA - 20, 20, YELLOW);
+        DrawText(txt_score, LARGURA - 400, ALTURA - 20, 20, YELLOW);
+        
+        // Desenho dos níveis:
+        char level[20];
+        sprintf(level, "Level: %d", fase_atual);
+        DrawText(level, LARGURA - 500, ALTURA - 20, 20, YELLOW);
 
         // desenha as vidas
         char txt_vidas[10];
-        sprintf(txt_vidas, "VIDAS: %d", pacman.vida);
+        sprintf(txt_vidas, "VIDAS: ", pacman.vida);
         DrawText(txt_vidas, 10, ALTURA - 20, 20, WHITE);
+        switch(pacman.vida){
+            case 3:{
+                DrawTexture(sprite_pac2, 90, ALTURA - 20, WHITE);
+                DrawTexture(sprite_pac2, 130, ALTURA - 20, WHITE);
+                DrawTexture(sprite_pac2, 170, ALTURA - 20, WHITE);
+            } break;
 
+            case 2:{
+                DrawTexture(sprite_pac2, 90, ALTURA - 20, WHITE);
+                DrawTexture(sprite_pac2, 130, ALTURA - 20, WHITE);
+            } break;
+
+            case 1:{
+                DrawTexture(sprite_pac2, 90, ALTURA - 20, WHITE);
+            } break;
+
+            case 0:{
+
+            } break;
+        }
         // Insere os sprites certos
         //Pacman:
         dest.x = pacman.posicao_x * 20 + 10;
@@ -773,11 +802,12 @@ int main(){
             DrawRectangle(0, 0, LARGURA, ALTURA, Fade(BLACK, 0.85f));
             DrawText("VOCE VENCEU O JOGO!", LARGURA / 2 - MeasureText("VOCE VENCEU O JOGO!", 40) / 2, 120,40, YELLOW);
             DrawText(TextFormat("Pontuacao Total: %d", pacman.pontuacao), LARGURA / 2 - 100, 200, 20, GREEN);
-            DrawText("Novo jogo (N)", LARGURA / 2 - 100, 260, 20, WHITE);
-            DrawText("Voltar ao Menu Inicial (TAB)", LARGURA / 2 - 100, 290, 20, WHITE);
+            DrawText("Voltar ao Inicio (ESC)", LARGURA / 2 - 100, 260, 20, WHITE);
+            DrawText("Voltar ao Menu (TAB)", LARGURA / 2 - 100, 290, 20, WHITE);
             DrawText("Sair (Q)", LARGURA / 2 - 100, 320, 20, WHITE);
-        }
-
+        
+        if (IsKeyPressed(KEY_ESCAPE)) tela = tela_inicial;
+        }   
         // Termina o desenho
         EndDrawing();
     }

@@ -37,6 +37,7 @@ typedef struct
     int x_inicial;
     int y_inicial;
     int id; // 0 - vermelho, 1 - rosa, 2 - laranja, 3 - azul
+    int num_fantasmas;
 } inimigo;
 
 typedef struct{

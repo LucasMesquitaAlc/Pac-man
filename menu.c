@@ -9,7 +9,7 @@
 #define LinhaMatriz 20
 #define ColunaMatriz 40
 
-void novojogo(char **matriz, personagem *pacman, inimigo *fantasmas, int *num_fantasmas, char mapa_filename[], int *pellets, int pontuacao, int vida) {
+void novojogo(char **matriz, personagem *pacman, inimigo *fantasmas, int *num_fantasmas, char mapa_filename[], int *pellets, int pontuacao, int vida, Texture2D sprites[], Sound sons[]) {
     int num_pellets;
     pacman->pontuacao = pontuacao;
     pacman->vida = vida;
@@ -44,6 +44,8 @@ void novojogo(char **matriz, personagem *pacman, inimigo *fantasmas, int *num_fa
     }
 
     for (int f = 0; f < *num_fantasmas; f++) {
+        fantasmas[f].id = f;
+        fantasmas[f].estado = 0;
         fantasmas[f].posicao_x = fantasmas[f].x_inicial;
         fantasmas[f].posicao_y = fantasmas[f].y_inicial;
         if (fantasmas[f].posicao_y >= 0 && fantasmas[f].posicao_y < LinhaMatriz && fantasmas[f].posicao_x >= 0 && fantasmas[f].posicao_x < ColunaMatriz) {
@@ -52,13 +54,13 @@ void novojogo(char **matriz, personagem *pacman, inimigo *fantasmas, int *num_fa
         } else {
             fantasmas[f].embaixo = '_';
         }
-        fantasmas[f].estado = 0;
         fantasmas[f].tempo = 0.0f;
         fantasmas[f].ultimo_x = fantasmas[f].posicao_x;
         fantasmas[f].ultimo_y = fantasmas[f].posicao_y;
         fantasmas[f].tamanho_lista = 0;
+        fantasmas[f].sprite = sprites[f];
     }
-
+    StopSound(sons[4]);
 }
 
 void salvarjogo(char **matriz, personagem *pacman, inimigo *fantasmas, int *num_fantasmas, char filename[], int *pellets) {
@@ -170,8 +172,8 @@ void carregarjogo(
     printf("Jogo carregado de %s\n", filename);
 }
 
-void sairjogo() {
-    CloseWindow();
+void sairjogo(TELA *tela_ptr) {
+    *tela_ptr = sair;
 }
 
 void menu(
@@ -182,14 +184,15 @@ void menu(
     int *num_fantasmas,
     char mapa_filename[],
     int *pellets,
-    Sound musica) {
+    Sound musica[],
+    Texture2D sprites[]) {
 
     if (*tela_ptr == tela_inicial) {
         if (IsKeyPressed(KEY_N)) {
-            novojogo(matriz, pacman, fantasmas, num_fantasmas, mapa_filename, pellets,0,3);
+            novojogo(matriz, pacman, fantasmas, num_fantasmas, mapa_filename, pellets,0,3, sprites, musica);
             *pellets += *num_fantasmas;
             *tela_ptr = jogo;
-            PlaySound(musica);
+            PlaySound(musica[3]);
         }
 
         if (IsKeyPressed(KEY_C)) {
@@ -198,7 +201,7 @@ void menu(
         }
         
         if (IsKeyPressed(KEY_Q)){
-            CloseWindow();
+            sairjogo(tela_ptr);
         }
         return;
     }
@@ -207,10 +210,7 @@ void menu(
         *tela_ptr = pausa;
         return;
     }
-    if ( (*tela_ptr == pausa || *tela_ptr == vitoria || *tela_ptr == gameover || *tela_ptr == venceu_final) && IsKeyPressed(KEY_ESCAPE)) {
-        *tela_ptr = tela_inicial;
-        return;
-    }
+    
     if (*tela_ptr != pausa) return;
 
     if (IsKeyPressed(KEY_V) || IsKeyPressed(KEY_TAB)) {
@@ -220,10 +220,10 @@ void menu(
 
     if (IsKeyPressed(KEY_N)) {
         mapa_filename = "mapas\\mapa1.txt";
-        novojogo(matriz, pacman, fantasmas, num_fantasmas, mapa_filename, pellets,0,3);
+        novojogo(matriz, pacman, fantasmas, num_fantasmas, mapa_filename, pellets,0,3, sprites, musica);
         *pellets += *num_fantasmas;
         *tela_ptr = jogo;
-        PlaySound(musica);
+        PlaySound(musica[3]);
         return;
     }
 
@@ -239,7 +239,12 @@ void menu(
     }
 
     if (IsKeyPressed(KEY_Q)) {
-        sairjogo();
+        sairjogo(tela_ptr);
+        return;
+    }
+
+    if ( (*tela_ptr == venceu_final)) {
+        *tela_ptr = tela_inicial;
         return;
     }
 }
@@ -248,13 +253,31 @@ void mostrar_gameover(TELA *tela_ptr, int *pontuacao, int *vidas_ptr){
     if (IsKeyPressed(KEY_TAB)) {
         *tela_ptr = pausa;
     }
+
     if (IsKeyPressed(KEY_Q)) {
-        sairjogo();
+        sairjogo(tela_ptr);
     }
 }
 
-void mostrar_vitoria(TELA *tela_ptr, int *pontuacao, int *vidas_ptr){
+void mostrar_vitoria(TELA *tela_ptr,
+    int *pontuacao,
+    int *vidas_ptr,
+    char **matriz,
+    personagem *pacman,
+    inimigo *fantasmas,
+    int *num_fantasmas,
+    int *pellets)
+    {
     if (IsKeyPressed(KEY_TAB)) {
         *tela_ptr = pausa;
+    }
+
+    if (IsKeyPressed(KEY_S)) {
+        salvarjogo(matriz, pacman, fantasmas, num_fantasmas, "save.bin", pellets);
+        return;
+    }
+
+    if (IsKeyPressed(KEY_Q)) {
+        sairjogo(tela_ptr);
     }
 }

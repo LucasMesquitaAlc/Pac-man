@@ -62,11 +62,11 @@ int ler_mapa(FILE *arquivo, char **matriz, personagem *pacman, inimigo *fantasma
                 fantasmas[f].ultimo_x = coluna;
                 fantasmas[f].ultimo_y = linha;
                 fantasmas[f].embaixo = '.';
+                fantasmas[f].id = f;
                 fantasmas[f].estado = 0;
                 fantasmas[f].tempo = 0.0f;
                 fantasmas[f].tamanho_lista = 0;
                 fantasmas[f].lista_posicoes = NULL;
-                fantasmas[f].id = f;
                 *num_fantasmas += 1;
                 f++;
             }
